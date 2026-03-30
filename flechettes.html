@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🎯 Fléchettes</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%230e0e0e'/%3E%3Ccircle cx='32' cy='32' r='28' fill='%23c0392b'/%3E%3Ccircle cx='32' cy='32' r='22' fill='%23f0ead8'/%3E%3Ccircle cx='32' cy='32' r='16' fill='%232e6b45'/%3E%3Ccircle cx='32' cy='32' r='10' fill='%23f0ead8'/%3E%3Ccircle cx='32' cy='32' r='5' fill='%23c9a84c'/%3E%3Ccircle cx='32' cy='32' r='2' fill='%230e0e0e'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --surface: #1a1a1a;
+    --card: #212121;
+    --border: #2e2e2e;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --green: #2e6b45;
+    --green-light: #3a8a58;
+    --red: #c0392b;
+    --text: #f0ead8;
+    --muted: #7a7060;
+    --white: #fff;
+    --active-glow: 0 0 18px rgba(201,168,76,0.45);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ────── SETUP SCREEN ────── */
+  #setup {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px 40px;
+    background: radial-gradient(ellipse at 50% 0%, #1e3d2a 0%, #0e0e0e 65%);
+  }
+
+  .title-block {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .title-block .dart-icon {
+    font-size: 48px;
+    line-height: 1;
+    display: block;
+    margin-bottom: 8px;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%,100% { transform: translateY(0) rotate(-5deg); }
+    50% { transform: translateY(-6px) rotate(5deg); }
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    color: var(--muted);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .setup-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%;
+    max-width: 420px;
+    margin-bottom: 16px;
+  }
+
+  .section-label {
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+
+  /* Mode selector */
+  .mode-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .mode-btn {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    padding: 16px;
+    cursor: pointer;
+    transition: all .2s;
+    text-align: center;
+  }
+
+  .mode-btn.selected {
+    border-color: var(--gold);
+    background: #1e1a0f;
+    color: var(--gold);
+    box-shadow: var(--active-glow);
+  }
+
+  /* Players */
+  .player-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .player-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .player-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    color: var(--muted);
+  }
+
+  .player-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1rem;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color .2s;
+  }
+
+  .player-input:focus { border-color: var(--gold); }
+  .player-input::placeholder { color: var(--muted); }
+
+  .remove-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 6px 8px;
+    font-size: 1rem;
+    transition: all .2s;
+  }
+
+  .remove-btn:hover { border-color: var(--red); color: var(--red); }
+
+  .add-player-btn {
+    background: none;
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+    padding: 10px;
+    width: 100%;
+    transition: all .2s;
+    margin-top: 4px;
+  }
+
+  .add-player-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  .start-btn {
+    background: var(--green);
+    border: none;
+    border-radius: 8px;
+    color: var(--white);
+    cursor: pointer;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 16px 32px;
+    width: 100%;
+    max-width: 420px;
+    transition: all .2s;
+  }
+
+  .start-btn:hover { background: var(--green-light); box-shadow: 0 4px 20px rgba(46,107,69,0.5); }
+
+  /* ────── GAME SCREEN ────── */
+  #game {
+    display: none;
+    flex-direction: column;
+    min-height: 100vh;
+    padding-bottom: 32px;
+  }
+
+  .game-header {
+    background: linear-gradient(180deg, #1a2e22 0%, #0e0e0e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .game-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--gold);
+  }
+
+  .new-game-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    padding: 6px 12px;
+    transition: all .2s;
+  }
+
+  .new-game-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* Score board */
+  .scoreboard {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    padding: 16px;
+    scrollbar-width: none;
+  }
+
+  .scoreboard::-webkit-scrollbar { display: none; }
+
+  .player-card {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    flex-shrink: 0;
+    min-width: 110px;
+    padding: 14px 12px;
+    text-align: center;
+    transition: all .3s;
+  }
+
+  .player-card.active {
+    border-color: var(--gold);
+    box-shadow: var(--active-glow);
+    background: #1e1a0f;
+  }
+
+  .player-card.winner {
+    border-color: #f7c948;
+    background: #1e1900;
+    animation: pulse-win .8s ease-in-out infinite alternate;
+  }
+
+  @keyframes pulse-win {
+    from { box-shadow: 0 0 10px rgba(247,201,72,0.3); }
+    to   { box-shadow: 0 0 28px rgba(247,201,72,0.7); }
+  }
+
+  .pc-name {
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .pc-score {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .player-card.active .pc-score { color: var(--gold-light); }
+  .player-card.winner .pc-score { color: #f7c948; }
+
+  .pc-darts {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* Turn panel */
+  .turn-panel {
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: 8px 16px;
+    border-radius: 10px;
+    padding: 18px 16px;
+  }
+
+  .turn-label {
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+
+  .current-player-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+
+  .score-entry {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .score-field {
+    flex: 1;
+    background: var(--surface);
+    border: 2px solid var(--gold);
+    border-radius: 8px;
+    color: var(--gold-light);
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    padding: 10px 14px;
+    text-align: center;
+    outline: none;
+    width: 100%;
+    -moz-appearance: textfield;
+  }
+
+  .score-field::-webkit-outer-spin-button,
+  .score-field::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .validate-btn {
+    background: var(--green);
+    border: none;
+    border-radius: 8px;
+    color: var(--white);
+    cursor: pointer;
+    font-size: 1.6rem;
+    padding: 0 20px;
+    transition: background .2s;
+    flex-shrink: 0;
+  }
+
+  .validate-btn:hover { background: var(--green-light); }
+
+  .bust-msg {
+    color: var(--red);
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    margin-top: 8px;
+    text-align: center;
+    min-height: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  /* Numpad */
+  .numpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin: 16px 16px 0;
+  }
+
+  .np-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    cursor: pointer;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    padding: 16px;
+    transition: all .15s;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  .np-btn:active { background: #2e2e2e; transform: scale(.95); }
+
+  .np-btn.np-clear { color: var(--red); }
+  .np-btn.np-ok { 
+    background: var(--green); 
+    border-color: var(--green-light);
+    color: var(--white);
+    font-size: 1.3rem;
+  }
+
+  /* History */
+  .history-section {
+    margin: 16px 16px 0;
+  }
+
+  .history-label {
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 220px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .history-item {
+    background: var(--card);
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    font-size: 0.95rem;
+  }
+
+  .history-item .hi-player { color: var(--muted); }
+  .history-item .hi-throw { font-weight: 700; color: var(--text); }
+  .history-item .hi-remaining { color: var(--gold); font-family: 'Playfair Display', serif; }
+  .history-item.hi-bust .hi-throw { color: var(--red); }
+
+  /* Winner overlay */
+  #winner-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.85);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 32px;
+    animation: fadein .4s ease;
+  }
+
+  @keyframes fadein { from { opacity:0 } to { opacity:1 } }
+
+  #winner-overlay.show { display: flex; }
+
+  .trophy { font-size: 72px; margin-bottom: 16px; animation: bounce 1s ease infinite alternate; }
+  @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-12px); } }
+
+  .winner-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    color: var(--muted);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+
+  .winner-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--gold);
+    margin: 8px 0 4px;
+  }
+
+  .winner-score {
+    font-size: 1rem;
+    color: var(--muted);
+    margin-bottom: 32px;
+  }
+
+  .overlay-btn {
+    background: var(--green);
+    border: none;
+    border-radius: 8px;
+    color: var(--white);
+    cursor: pointer;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    padding: 14px 32px;
+    margin: 6px;
+    transition: background .2s;
+  }
+
+  .overlay-btn:hover { background: var(--green-light); }
+
+  .overlay-btn.secondary {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ SETUP ═══════════════ -->
+<div id="setup">
+  <div class="title-block">
+    <span class="dart-icon">🎯</span>
+    <h1>Fléchettes</h1>
+    <p class="subtitle">Compteur de points</p>
+  </div>
+
+  <div class="setup-card">
+    <div class="section-label">Mode de jeu</div>
+    <div class="mode-btns">
+      <button class="mode-btn selected" onclick="selectMode(301)">301</button>
+      <button class="mode-btn" onclick="selectMode(501)">501</button>
+    </div>
+  </div>
+
+  <div class="setup-card">
+    <div class="section-label">Joueurs</div>
+    <div class="player-list" id="playerList"></div>
+    <button class="add-player-btn" onclick="addPlayer()">+ Ajouter un joueur</button>
+  </div>
+
+  <button class="start-btn" onclick="startGame()">Commencer la partie ▶</button>
+</div>
+
+<!-- ═══════════════ GAME ═══════════════ -->
+<div id="game">
+  <div class="game-header">
+    <h2 id="modeLabel">301</h2>
+    <button class="new-game-btn" onclick="goSetup()">↩ Nouvelle partie</button>
+  </div>
+
+  <div class="scoreboard" id="scoreboard"></div>
+
+  <div class="turn-panel" id="turnPanel">
+    <div class="turn-label">Tour de</div>
+    <div class="current-player-name" id="currentName">—</div>
+    <div class="score-entry">
+      <input type="number" class="score-field" id="scoreField" min="0" max="180" placeholder="0" inputmode="numeric" readonly>
+      <button class="validate-btn" onclick="submitScore()">✓</button>
+    </div>
+    <div class="bust-msg" id="bustMsg"></div>
+  </div>
+
+  <div class="numpad" id="numpad"></div>
+
+  <div class="history-section">
+    <div class="history-label">Historique</div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ WINNER OVERLAY ═══════════════ -->
+<div id="winner-overlay">
+  <div class="trophy">🏆</div>
+  <div class="winner-text">Vainqueur</div>
+  <div class="winner-name" id="winnerName">—</div>
+  <div class="winner-score" id="winnerStats">—</div>
+  <button class="overlay-btn" onclick="rematch()">Revanche 🎯</button>
+  <button class="overlay-btn secondary" onclick="goSetup()">Changer de joueurs</button>
+</div>
+
+<script>
+// ─── STATE ───
+let mode = 301;
+let players = [];
+let scores = [];
+let dartCounts = [];
+let currentIdx = 0;
+let history = [];
+let inputVal = '';
+let gameActive = false;
+
+// ─── SETUP ───
+function selectMode(m) {
+  mode = m;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('selected', parseInt(b.textContent) === m));
+}
+
+function buildPlayerList() {
+  const list = document.getElementById('playerList');
+  list.innerHTML = '';
+  players.forEach((name, i) => {
+    const row = document.createElement('div');
+    row.className = 'player-row';
+    row.innerHTML = `
+      <div class="player-num">${i+1}</div>
+      <input class="player-input" type="text" placeholder="Joueur ${i+1}" value="${name}"
+             oninput="players[${i}]=this.value">
+      ${players.length > 2 ? `<button class="remove-btn" onclick="removePlayer(${i})">✕</button>` : ''}
+    `;
+    list.appendChild(row);
+  });
+}
+
+function addPlayer() {
+  if (players.length >= 6) return;
+  players.push('');
+  buildPlayerList();
+}
+
+function removePlayer(i) {
+  players.splice(i, 1);
+  buildPlayerList();
+}
+
+function startGame() {
+  // Validate names
+  players = players.map((p, i) => (p.trim() || `Joueur ${i+1}`));
+  if (players.length < 2) { alert('Au moins 2 joueurs !'); return; }
+  initGame();
+}
+
+// ─── GAME INIT ───
+function initGame() {
+  scores = players.map(() => mode);
+  dartCounts = players.map(() => 0);
+  currentIdx = 0;
+  history = [];
+  inputVal = '';
+  gameActive = true;
+
+  document.getElementById('setup').style.display = 'none';
+  document.getElementById('game').style.display = 'flex';
+  document.getElementById('winner-overlay').classList.remove('show');
+  document.getElementById('modeLabel').textContent = `🎯 ${mode}`;
+
+  buildNumpad();
+  render();
+}
+
+// ─── NUMPAD ───
+function buildNumpad() {
+  const pad = document.getElementById('numpad');
+  pad.innerHTML = '';
+  [1,2,3,4,5,6,7,8,9,'⌫',0,'✓'].forEach(k => {
+    const b = document.createElement('button');
+    b.className = 'np-btn' + (k === '⌫' ? ' np-clear' : '') + (k === '✓' ? ' np-ok' : '');
+    b.textContent = k;
+    b.addEventListener('click', () => numpadPress(k));
+    pad.appendChild(b);
+  });
+}
+
+function numpadPress(k) {
+  if (!gameActive) return;
+  document.getElementById('bustMsg').textContent = '';
+  if (k === '✓') { submitScore(); return; }
+  if (k === '⌫') {
+    inputVal = inputVal.slice(0, -1);
+  } else {
+    const next = inputVal + k;
+    if (parseInt(next) > 180) return; // max 180
+    inputVal = next;
+  }
+  document.getElementById('scoreField').value = inputVal;
+}
+
+// ─── SCORE LOGIC ───
+function submitScore() {
+  if (!gameActive) return;
+  const thrown = inputVal === '' ? 0 : parseInt(inputVal);
+  if (isNaN(thrown) || thrown < 0 || thrown > 180) {
+    document.getElementById('bustMsg').textContent = 'Score invalide (0–180)';
+    return;
+  }
+
+  const remaining = scores[currentIdx] - thrown;
+  let bust = false;
+
+  if (remaining < 0 || remaining === 1) {
+    bust = true;
+  }
+
+  dartCounts[currentIdx] += 3;
+
+  if (bust) {
+    // No change to score
+    document.getElementById('bustMsg').textContent = '💥 BUST ! Score annulé';
+    history.unshift({ player: players[currentIdx], thrown, remaining: scores[currentIdx], bust: true });
+    clearInput();
+    setTimeout(() => {
+      document.getElementById('bustMsg').textContent = '';
+      nextPlayer();
+    }, 1000);
+    return;
+  }
+
+  scores[currentIdx] = remaining;
+  history.unshift({ player: players[currentIdx], thrown, remaining, bust: false });
+
+  if (remaining === 0) {
+    gameActive = false;
+    clearInput();
+    render();
+    showWinner(currentIdx);
+    return;
+  }
+
+  clearInput();
+  nextPlayer();
+}
+
+function clearInput() {
+  inputVal = '';
+  document.getElementById('scoreField').value = '';
+}
+
+function nextPlayer() {
+  currentIdx = (currentIdx + 1) % players.length;
+  render();
+  document.getElementById('scoreField').focus();
+}
+
+// ─── RENDER ───
+function render() {
+  // Scoreboard
+  const sb = document.getElementById('scoreboard');
+  sb.innerHTML = '';
+  players.forEach((name, i) => {
+    const card = document.createElement('div');
+    card.className = 'player-card' + (i === currentIdx && gameActive ? ' active' : '');
+    card.innerHTML = `
+      <div class="pc-name">${name}</div>
+      <div class="pc-score">${scores[i]}</div>
+      <div class="pc-darts">🎯 ${dartCounts[i]}</div>
+    `;
+    sb.appendChild(card);
+  });
+
+  // Turn panel
+  document.getElementById('currentName').textContent = players[currentIdx];
+
+  // History
+  const hl = document.getElementById('historyList');
+  hl.innerHTML = '';
+  history.slice(0, 20).forEach(h => {
+    const item = document.createElement('div');
+    item.className = 'history-item' + (h.bust ? ' hi-bust' : '');
+    item.innerHTML = `
+      <span class="hi-player">${h.player}</span>
+      <span class="hi-throw">${h.bust ? '💥 ' : ''}${h.thrown}</span>
+      <span class="hi-remaining">→ ${h.remaining}</span>
+    `;
+    hl.appendChild(item);
+  });
+}
+
+// ─── WINNER ───
+function showWinner(idx) {
+  // Mark winner card
+  document.querySelectorAll('.player-card')[idx].classList.add('winner');
+  const darts = dartCounts[idx];
+  document.getElementById('winnerName').textContent = players[idx];
+  document.getElementById('winnerStats').textContent = `Victoire en ${darts} fléchettes`;
+  document.getElementById('winner-overlay').classList.add('show');
+}
+
+// ─── NAV ───
+function rematch() {
+  document.getElementById('winner-overlay').classList.remove('show');
+  initGame();
+}
+
+function goSetup() {
+  document.getElementById('winner-overlay').classList.remove('show');
+  document.getElementById('game').style.display = 'none';
+  document.getElementById('setup').style.display = 'flex';
+  gameActive = false;
+  buildPlayerList();
+}
+
+// ─── INIT SETUP ───
+players = ['', ''];
+buildPlayerList();
+</script>
+</body>
+</html>
